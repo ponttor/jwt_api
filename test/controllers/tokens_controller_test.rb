@@ -146,10 +146,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
     token = JwtService.encode({ key: 'test_key', value: 'test_value' })
 
     delete tokens_url, params: { token: token }, as: :json
-    assert_response :success
-
-    json_response = response.parsed_body
-    assert_equal 'Token has been invalidated', json_response['message']
+    assert_response :no_content
 
     get validate_url, params: { token: token }
 

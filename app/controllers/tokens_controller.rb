@@ -49,7 +49,7 @@ class TokensController < ApplicationController
   def destroy
     TokenService.new(params[:token]).invalidate_token
 
-    render json: { message: 'Token has been invalidated' }, status: :ok
+    head :no_content
   rescue TokenService::TokenValidationError => e
     render json: { error: e.message }, status: :bad_request
   rescue JWT::DecodeError, JWT::ExpiredSignature => e
