@@ -31,7 +31,7 @@ class JwtServiceTest < ActiveSupport::TestCase
   end
 
   test 'invalidate creates an expired token' do
-    expired_token = JwtService.invalidate(@payload)
+    expired_token = JwtService.encode(@payload, 1.minute.ago)
 
     assert_raises(JWT::ExpiredSignature) do
       JwtService.decode(expired_token)

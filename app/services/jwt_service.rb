@@ -18,9 +18,5 @@ class JwtService
 
       ActiveSupport::HashWithIndifferentAccess.new(body)
     end
-
-    def invalidate(payload)
-      encode(payload, 1.minute.ago)
-    end
   end
 end
