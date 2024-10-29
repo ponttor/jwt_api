@@ -70,7 +70,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   test 'should validate token' do
     token = JwtService.encode({ key: 'test_key', value: 'test_value' })
 
-    get validate_url, params: { token: token }
+    get validate_tokens_url, params: { token: token }
 
     assert_response :success
 
@@ -79,7 +79,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should not validate invalid token not enough segments' do
-    get validate_url, params: { token: 'invalid_token' }
+    get validate_tokens_url, params: { token: 'invalid_token' }
 
     assert_response :bad_request
     json_response = response.parsed_body
@@ -87,7 +87,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should not validate invalid token is empty' do
-    get validate_url, params: {}
+    get validate_tokens_url, params: {}
 
     assert_response :bad_request
     json_response = response.parsed_body
@@ -97,7 +97,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   test 'should not validate expired token' do
     token = JwtService.encode({ key: 'test_key', value: 'test_value' }, 5.seconds.ago)
 
-    get validate_url, params: { token: token }
+    get validate_tokens_url, params: { token: token }
 
     assert_response :unprocessable_entity
     json_response = response.parsed_body
@@ -105,7 +105,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should not validate invalid token Invalid segment encoding' do
-    get validate_url, params: { token: 'invalid_token.invalid.token' }
+    get validate_tokens_url, params: { token: 'invalid_token.invalid.token' }
 
     assert_response :unprocessable_entity
     json_response = response.parsed_body
@@ -115,7 +115,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   test 'should not validate token with invalid signature' do
     token = JWT.encode({ key: 'test_key', value: 'test_value' }, 'wrong_secret', 'HS256')
 
-    get validate_url, params: { token: token }
+    get validate_tokens_url, params: { token: token }
 
     assert_response :unprocessable_entity
     json_response = response.parsed_body
@@ -125,7 +125,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   test 'should validate token with future expiration' do
     token = JwtService.encode({ key: 'test_key', value: 'test_value' }, 10.minutes.from_now)
 
-    get validate_url, params: { token: token }
+    get validate_tokens_url, params: { token: token }
 
     assert_response :success
     json_response = response.parsed_body
@@ -135,7 +135,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   test 'should not validate token without exp claim' do
     token = JWT.encode({ key: 'test_key', value: 'test_value' }, JwtService::JWT_SECRET, 'HS512')
 
-    get validate_url, params: { token: token }
+    get validate_tokens_url, params: { token: token }
 
     assert_response :unprocessable_entity
     json_response = response.parsed_body
@@ -144,11 +144,11 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
 
   test 'should delete (invalidate) token' do
     token = JwtService.encode({ key: 'test_key', value: 'test_value' })
-
+    # byebug
     delete tokens_url, params: { token: token }, as: :json
     assert_response :no_content
 
-    get validate_url, params: { token: token }
+    get validate_tokens_url, params: { token: token }
 
     assert_response :unprocessable_entity
     json_response = response.parsed_body
@@ -201,7 +201,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
 
     Rails.cache.write("invalid_token:#{token_id}", true, expires_in: JwtService::EXPIRATION_TIME)
 
-    get validate_url, params: { token: token }
+    get validate_tokens_url, params: { token: token }
 
     assert_response :unprocessable_entity
     json_response = response.parsed_body
@@ -211,7 +211,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   test 'should renew token' do
     token = JwtService.encode({ key: 'test_key', value: 'test_value' }, 10.seconds.from_now)
 
-    post renew_url, params: { token: token }, as: :json
+    post renew_tokens_url, params: { token: token }, as: :json
 
     assert_response :success
 
@@ -230,7 +230,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   test 'should not renew expired token' do
     token = JwtService.encode({ key: 'test_key', value: 'test_value' }, 5.seconds.ago)
 
-    post renew_url, params: { token: token }, as: :json
+    post renew_tokens_url, params: { token: token }, as: :json
 
     assert_response :unprocessable_entity
 
@@ -239,7 +239,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should handle invalid token in renew' do
-    post renew_url, params: { token: 'invalid_token' }, as: :json
+    post renew_tokens_url, params: { token: 'invalid_token' }, as: :json
 
     assert_response :bad_request
     json_response = response.parsed_body
@@ -247,7 +247,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should not renew without token parameter' do
-    post renew_url, params: {}, as: :json
+    post renew_tokens_url, params: {}, as: :json
 
     assert_response :bad_request
     json_response = response.parsed_body
@@ -261,7 +261,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
     token_id = decoded_token[:jti]
     Rails.cache.write("invalid_token:#{token_id}", true, expires_in: JwtService::EXPIRATION_TIME)
 
-    post renew_url, params: { token: token }, as: :json
+    post renew_tokens_url, params: { token: token }, as: :json
 
     assert_response :unprocessable_entity
     json_response = response.parsed_body
@@ -271,7 +271,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   test 'should renew token as QR code' do
     token = JwtService.encode({ key: 'test_key', value: 'test_value' }, 10.minutes.from_now)
 
-    post renew_url, params: { token: token, format: 'qr' }, as: :json
+    post renew_tokens_url, params: { token: token, format: 'qr' }, as: :json
 
     assert_response :success
 
