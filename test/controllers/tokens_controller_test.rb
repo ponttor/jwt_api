@@ -91,7 +91,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :bad_request
     json_response = response.parsed_body
-    assert_equal "Token can't be blank, Token is not in a valid JWT format", json_response['error']
+    assert_equal 'param is missing or the value is empty: token', json_response['error']
   end
 
   test 'should not validate expired token' do
@@ -190,7 +190,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :bad_request
     json_response = response.parsed_body
-    assert_equal "Token can't be blank, Token is not in a valid JWT format", json_response['error']
+    assert_equal 'param is missing or the value is empty: token', json_response['error']
   end
 
   test 'should not validate invalidated token' do
@@ -251,7 +251,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :bad_request
     json_response = response.parsed_body
-    assert_equal "Token can't be blank, Token is not in a valid JWT format", json_response['error']
+    assert_equal 'param is missing or the value is empty: token', json_response['error']
   end
 
   test 'should not renew invalidated token' do

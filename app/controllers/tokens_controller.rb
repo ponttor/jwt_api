@@ -17,7 +17,7 @@ class TokensController < ApplicationController
   end
 
   def validate
-    TokenService.new(params[:token]).decode_token
+    TokenService.new(token_param).decode_token
 
     render json: { message: 'Token is valid' }, status: :ok
   rescue StandardError => e
@@ -25,7 +25,7 @@ class TokensController < ApplicationController
   end
 
   def renew
-    new_token = TokenService.new(params[:token]).renew_token
+    new_token = TokenService.new(token_param).renew_token
 
     return send_qr_code_response(new_token) if params[:format] == 'qr'
 
@@ -35,7 +35,7 @@ class TokensController < ApplicationController
   end
 
   def destroy
-    TokenService.new(params[:token]).invalidate_token
+    TokenService.new(token_param).invalidate_token
 
     head :no_content
   rescue StandardError => e
@@ -43,6 +43,10 @@ class TokensController < ApplicationController
   end
 
   private
+
+  def token_param
+    params.require(:token)
+  end
 
   def token_params
     params.require(:token).permit(payload: {})
