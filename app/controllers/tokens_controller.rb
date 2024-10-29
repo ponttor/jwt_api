@@ -37,7 +37,7 @@ class TokensController < ApplicationController
 
     return send_qr_code_response(new_token) if params[:format] == 'qr'
 
-    render json: { token: new_token, message: 'Token renewed successfully' }, status: :ok
+    render json: { token: new_token, message: 'Token renewed successfully' }
   rescue TokenService::TokenValidationError => e
     render json: { error: e.message }, status: :bad_request
   rescue JWT::DecodeError, JWT::ExpiredSignature => e
