@@ -81,7 +81,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   test 'should not validate invalid token not enough segments' do
     get validate_tokens_url, params: { token: 'invalid_token' }
 
-    assert_response :bad_request
+    assert_response :unprocessable_entity
     json_response = response.parsed_body
     assert_equal 'Token is not in a valid JWT format', json_response['error']
   end
@@ -152,7 +152,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     json_response = response.parsed_body
-    assert_equal 'Token has been invalidated', json_response['error']
+    assert_equal 'Token is invalid or has been revoked', json_response['error']
   end
 
   test 'should not delete invalid token' do
@@ -170,7 +170,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
 
     delete tokens_url, params: { token: invalid_token }, as: :json
 
-    assert_response :bad_request
+    assert_response :unprocessable_entity
     json_response = response.parsed_body
     assert_equal 'Token is not in a valid JWT format', json_response['error']
   end
@@ -205,7 +205,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     json_response = response.parsed_body
-    assert_equal 'Token has been invalidated', json_response['error']
+    assert_equal 'Token is invalid or has been revoked', json_response['error']
   end
 
   test 'should renew token' do
@@ -241,7 +241,7 @@ class TokensControllerTest < ActionDispatch::IntegrationTest
   test 'should handle invalid token in renew' do
     post renew_tokens_url, params: { token: 'invalid_token' }, as: :json
 
-    assert_response :bad_request
+    assert_response :unprocessable_entity
     json_response = response.parsed_body
     assert_equal 'Token is not in a valid JWT format', json_response['error']
   end

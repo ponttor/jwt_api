@@ -5,10 +5,10 @@ module ErrorHandler
 
   def handle_error(exception, action:)
     case exception
-    when ActionController::ParameterMissing, TokenService::TokenValidationError
+    when ActionController::ParameterMissing
       Rails.logger.warn("#{action} failed: #{exception.message}")
       render json: { error: exception.message }, status: :bad_request
-    when TokenCreationForm::PayloadError, JWT::EncodeError, JWT::DecodeError, JWT::ExpiredSignature, TypeError
+    when JWT::EncodeError, JWT::DecodeError, JWT::ExpiredSignature, TypeError, TokenService::TokenPayloadError
       Rails.logger.error("#{action} unprocessable entity: #{exception.message}")
       render json: { error: exception.message }, status: :unprocessable_entity
     when MiniMagick::Error

@@ -10,7 +10,7 @@ class JwtService
       payload[:exp] = exp.to_i
       payload[:jti] = SecureRandom.uuid
 
-      JWT.encode(payload, JWT_SECRET, ALGORITHM)
+      JWT.encode(payload.to_h, JWT_SECRET, ALGORITHM)
     end
 
     def decode(token)

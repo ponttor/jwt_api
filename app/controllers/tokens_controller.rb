@@ -4,22 +4,21 @@ class TokensController < ApplicationController
   rate_limit to: 100, within: 1.minute, store: Rails.cache
 
   def create
-    form = TokenCreationForm.new(token_params)
+    token = TokenService.new.create_token(token_params[:payload])
 
-    if form.valid?
-      token = JwtService.encode(form.normalized)
-      return send_qr_code_response(token) if params[:format] == 'qr'
+    return send_qr_code_response(token) if params[:format] == 'qr'
 
-      render json: { token: token, message: 'Token has been generated' }
-    end
+    render json: { token: token, message: 'Token has been generated' }
   rescue StandardError => e
     handle_error(e, action: 'Creation')
   end
 
   def validate
-    TokenService.new(token_param).decode_token
-
-    render json: { message: 'Token is valid' }, status: :ok
+    if TokenService.new(token_param).valid_token?
+      render json: { message: 'Token is valid' }, status: :ok
+    else
+      render json: { error: 'Token is invalid or has been revoked' }, status: :unprocessable_entity
+    end
   rescue StandardError => e
     handle_error(e, action: 'Validate')
   end

@@ -22,14 +22,14 @@ class TokenServiceTest < ActiveSupport::TestCase
   test 'should raise error for invalid payload on token creation' do
     service = TokenService.new
 
-    assert_raises(TokenCreationForm::PayloadError) do
+    assert_raises(TokenService::TokenPayloadError) do
       service.create_token(nil)
     end
   end
 
   test 'should decode valid token' do
     service = TokenService.new(@valid_token)
-    decoded_token = service.decode_token
+    decoded_token = service.decode_and_validate_token
 
     assert_equal @payload[:key], decoded_token['key']
     assert_equal @payload[:value], decoded_token['value']
@@ -39,7 +39,7 @@ class TokenServiceTest < ActiveSupport::TestCase
     service = TokenService.new('invalid.token.format')
 
     assert_raises(JWT::DecodeError) do
-      service.decode_token
+      service.decode_and_validate_token
     end
   end
 
@@ -47,7 +47,7 @@ class TokenServiceTest < ActiveSupport::TestCase
     service = TokenService.new(@expired_token)
 
     assert_raises(JWT::ExpiredSignature) do
-      service.decode_token
+      service.decode_and_validate_token
     end
   end
 
@@ -83,8 +83,8 @@ class TokenServiceTest < ActiveSupport::TestCase
 
     service = TokenService.new(@valid_token)
 
-    assert_raises(JWT::ExpiredSignature) do
-      service.decode_token
+    assert_raises(TokenService::TokenPayloadError, 'Token has been invalidated') do
+      service.decode_and_validate_token
     end
   end
 end
