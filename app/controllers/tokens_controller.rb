@@ -12,24 +12,16 @@ class TokensController < ApplicationController
 
       render json: { token: token, message: 'Token has been generated' }
     end
-  rescue ActionController::ParameterMissing => e
-    render json: { error: e.message }, status: :bad_request
-  rescue TokenCreationForm::PayloadError, JWT::EncodeError, TypeError => e
-    render json: { error: e.message }, status: :unprocessable_entity
   rescue StandardError => e
-    render json: { error: "Creation error: #{e.message}" }, status: :internal_server_error
+    handle_error(e, action: 'Creation')
   end
 
   def validate
     TokenService.new(params[:token]).decode_token
 
     render json: { message: 'Token is valid' }, status: :ok
-  rescue TokenService::TokenValidationError => e
-    render json: { error: e.message }, status: :bad_request
-  rescue JWT::DecodeError, JWT::ExpiredSignature => e
-    render json: { error: e.message }, status: :unprocessable_entity
   rescue StandardError => e
-    render json: { error: "Validation error: #{e.message}" }, status: :internal_server_error
+    handle_error(e, action: 'Validate')
   end
 
   def renew
@@ -38,24 +30,16 @@ class TokensController < ApplicationController
     return send_qr_code_response(new_token) if params[:format] == 'qr'
 
     render json: { token: new_token, message: 'Token renewed successfully' }
-  rescue TokenService::TokenValidationError => e
-    render json: { error: e.message }, status: :bad_request
-  rescue JWT::DecodeError, JWT::ExpiredSignature => e
-    render json: { error: e.message }, status: :unprocessable_entity
   rescue StandardError => e
-    render json: { error: "Renewing error: #{e.message}" }, status: :internal_server_error
+    handle_error(e, action: 'Renew')
   end
 
   def destroy
     TokenService.new(params[:token]).invalidate_token
 
     head :no_content
-  rescue TokenService::TokenValidationError => e
-    render json: { error: e.message }, status: :bad_request
-  rescue JWT::DecodeError, JWT::ExpiredSignature => e
-    render json: { error: e.message }, status: :unprocessable_entity
   rescue StandardError => e
-    render json: { error: "Delete error: #{e.message}" }, status: :internal_server_error
+    handle_error(e, action: 'Delete')
   end
 
   private
@@ -67,5 +51,16 @@ class TokensController < ApplicationController
   def send_qr_code_response(token)
     qr_code_png = QrCodeService.generate_png(token)
     send_data qr_code_png, type: 'image/png', disposition: 'inline'
+  end
+
+  def handle_error(exception, action:)
+    case exception
+    when ActionController::ParameterMissing, TokenService::TokenValidationError
+      render json: { error: exception.message }, status: :bad_request
+    when TokenCreationForm::PayloadError, JWT::EncodeError, JWT::DecodeError, JWT::ExpiredSignature, TypeError
+      render json: { error: exception.message }, status: :unprocessable_entity
+    else
+      render json: { error: "#{action} error: #{exception.message}" }, status: :internal_server_error
+    end
   end
 end
