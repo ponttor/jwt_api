@@ -19,7 +19,11 @@ class QrCodeService
     def convert_svg_to_png(svg_code)
       image = MiniMagick::Image.read(svg_code) { |img| img.format 'svg' }
       image.format 'png'
+      raise StandardError, 'Failed to convert SVG to PNG' unless image.valid?
+
       image.to_blob
+    rescue MiniMagick::Error
+      raise StandardError, 'Failed to convert SVG to PNG'
     end
   end
 end

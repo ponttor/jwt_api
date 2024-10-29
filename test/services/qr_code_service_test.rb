@@ -32,4 +32,14 @@ class QrCodeServiceTest < ActiveSupport::TestCase
     assert png_data.is_a?(String)
     assert_equal 'PNG', png_data[1..3]
   end
+
+  test 'should raise error if SVG conversion to PNG fails' do
+    invalid_svg_code = '<svg><invalid_tag></invalid_tag></svg>'
+
+    error = assert_raises(StandardError) do
+      QrCodeService.convert_svg_to_png(invalid_svg_code)
+    end
+
+    assert_equal 'Failed to convert SVG to PNG', error.message
+  end
 end
