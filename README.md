@@ -1,3 +1,5 @@
+[![CI Status](https://github.com/ponttor/jwt_api/actions/workflows/main.yml/badge.svg)](https://github.com/ponttor/jwt_api/actions)
+
 ## JWT API
 
 ## Technical specifications and requirements for the project
