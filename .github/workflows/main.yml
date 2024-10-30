@@ -27,7 +27,7 @@ jobs:
         run: |
           echo "JWT_SECRET=$JWT_SECRET" >> $GITHUB_ENV
 
-      - name: Run Rubocop and Slim lint
+      - name: Run Rubocop
         run: make lint
       
       - name: Run test
