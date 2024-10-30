@@ -15,12 +15,17 @@ jobs:
 
       - name: Set up Ruby 3.0
         uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.0
 
       - name: Install dependencies
         run: make install
 
-      - name: Install node packages
-        run: yarn install
+      - name: Set up environment variables
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          echo "JWT_SECRET=$JWT_SECRET" >> $GITHUB_ENV
 
       - name: Run Rubocop and Slim lint
         run: make lint
