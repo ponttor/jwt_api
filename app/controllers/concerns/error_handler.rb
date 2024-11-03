@@ -5,6 +5,9 @@ module ErrorHandler
 
   def handle_error(exception, action:)
     case exception
+    when TokenService::InvalidTokenError
+      Rails.logger.warn("#{action} failed: #{exception.message}")
+      render json: { error: exception.message }, status: :unprocessable_entity
     when ActionController::ParameterMissing
       Rails.logger.warn("#{action} failed: #{exception.message}")
       render json: { error: exception.message }, status: :bad_request

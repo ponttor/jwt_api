@@ -2,6 +2,7 @@
 
 class TokenService
   class TokenPayloadError < StandardError; end
+  class InvalidTokenError < StandardError; end
 
   def initialize(token = nil)
     @token = token
@@ -54,7 +55,7 @@ class TokenService
   end
 
   def validate_token_id(token_id)
-    raise TokenPayloadError, 'Token has been invalidated' if token_invalidated?(token_id)
+    raise InvalidTokenError, 'Token has been invalidated' if token_invalidated?(token_id)
   end
 
   def invalidate_token_id(token_id)

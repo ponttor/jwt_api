@@ -83,7 +83,7 @@ class TokenServiceTest < ActiveSupport::TestCase
 
     service = TokenService.new(@valid_token)
 
-    assert_raises(TokenService::TokenPayloadError, 'Token has been invalidated') do
+    assert_raises(TokenService::InvalidTokenError, 'Token has been invalidated') do
       service.decode_and_validate_token
     end
   end
